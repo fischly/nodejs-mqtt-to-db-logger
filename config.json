@@ -1,0 +1,10 @@
+{
+    "database": {
+        "filename": "database.sqlite3"
+    },
+
+    "mqtt": {
+        "host": "mqtt://localhost:13337",
+        "topic": "dci-test"
+    }
+}
