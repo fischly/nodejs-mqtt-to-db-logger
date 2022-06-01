@@ -6,5 +6,9 @@
     "mqtt": {
         "host": "mqtt://localhost:13337",
         "topic": "dci-test"
+    },
+
+    "http": {
+        "port": 8081
     }
 }

@@ -3,42 +3,26 @@ const config = require('./config.json');
 const db = require('./db/db.js');
 const dbHelper = require('./db/dbHelper.js');
 
+const express = require('express');
 const mqtt = require('mqtt');
 const process = require('process');
 
+const mqttLogger = require('./mqtt-logger/mqtt-logger');
+const httpServer = require('./http-server/http-server');
+const websocketServer = require('./websocket-server/websocket-server');
+
 // init the database
 db.initDb().then(() => {
-    // start the mqtt server
-    console.log('Starting the MQTT server...');
+    const app = express();
 
-    const mqttClient = mqtt.connect(config.mqtt.host);
-
-    // listen for on connect event
-    mqttClient.on('connect', () => {
-        console.log('MQTT client connected');
-
-        // when connected, subscribe to the topic specified in the config file
-        mqttClient.subscribe(config.mqtt.topic, function(err) {
-            if (err) {
-                console.error('Error trying to subscribe to topic: ', err);
-                process.exit(1);
-            }
-        });
+    const mqttClient = mqttLogger();
+    const httpServerInstance = httpServer(app);
+    
+    const server = app.listen(config.http.port, () => {
+        console.log('HTTP server running on port ', config.http.port);
     });
 
-    // listen for on message events
-    mqttClient.on('message', (topic, message) => {
-        console.log('Received message on topic "' + topic + '": ' + message);
-
-        // parse message and insert into database
-        const parsedMessage = JSON.parse(message);
-        dbHelper.insertMeasurment(parsedMessage.name, parsedMessage.value).then(() => {
-            console.log('Inserted measurement into database (', parsedMessage , ')');
-        }, (error) => {
-            console.error('Error inserting measurement into database: ', error);
-        });
-    });
-
+    // const websocketServerInstance = websocketServer(server);
 
 }, (err) => {
     console.error(err);
