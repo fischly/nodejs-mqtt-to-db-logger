@@ -1,3 +1,7 @@
+# exclude front-end, since it it it's own repository
+front-end/
+
+
 # Logs
 logs
 *.log
