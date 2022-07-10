@@ -8,9 +8,9 @@ const process = require('process');
 
 
 function start() {
-    // start the mqtt server
     console.log('Starting the MQTT logging...');
-
+    
+    // start the mqtt client and connect to mqtt server given in the config file
     const mqttClient = mqtt.connect(config.mqtt.host);
 
     // listen for on connect event
@@ -32,7 +32,13 @@ function start() {
 
         // parse message and insert into database
         const parsedMessage = JSON.parse(message);
-        dbHelper.insertMeasurment(parsedMessage.name, parsedMessage.value).then(() => {
+        dbHelper.insertMeasurment(
+            parsedMessage.name,
+            parsedMessage.value,
+            parsedMessage.unit,
+            parsedMessage.device,
+            parsedMessage.send_time
+        ).then(() => {
             console.log('Inserted measurement into database (', parsedMessage , ')');
         }, (error) => {
             console.error('Error inserting measurement into database: ', error);

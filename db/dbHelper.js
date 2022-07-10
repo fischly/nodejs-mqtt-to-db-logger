@@ -1,21 +1,29 @@
 const db = require('./db');
 
 
-function insertMeasurment(sensorName, value) {
+function insertMeasurment(sensorName, value, unit, device, sendTime) {
     return new Promise((resolve, reject) => {
-        db.getDb().run('INSERT INTO measurements (sensorName, value) VALUES (?, ?)', sensorName, value, function(err) {
-            if (err) {
-                reject(err);
-            }
+        db.getDb().run('INSERT INTO measurements (sensorName, value, unit, device, sendTime) VALUES (?, ?, ?, ?, ?)', 
+            sensorName, 
+            value,
+            unit,
+            device,
+            sendTime,
+            
+            function(err) {
+                if (err) {
+                    reject(err);
+                }
 
-            resolve(this.lastID);
-        });
+                resolve(this.lastID);
+            }
+        );
     });
 }
 
 function getSensors() {
     return new Promise((resolve, reject) => {
-        db.getDb().all('SELECT sensorName, min(date) as date, value  FROM measurements GROUP BY sensorName', function(err, rows) {
+        db.getDb().all('SELECT sensorName as name, device, unit, max(sendTime) as lastMeasurement, value as lastValue  FROM measurements GROUP BY sensorName', function(err, rows) {
             if (err) {
                 reject(err);
             }
