@@ -23,7 +23,7 @@ function insertMeasurment(sensorName, value, unit, device, sendTime) {
 
 function getSensors() {
     return new Promise((resolve, reject) => {
-        db.getDb().all('SELECT sensorName as name, device, unit, max(sendTime) as lastMeasurement, value as lastValue  FROM measurements GROUP BY sensorName', function(err, rows) {
+        db.getDb().all('SELECT sensorName as name, device, unit, max(sendTime) as lastMeasurement, value as lastValue  FROM measurements GROUP BY sensorName, device', function(err, rows) {
             if (err) {
                 reject(err);
             }
