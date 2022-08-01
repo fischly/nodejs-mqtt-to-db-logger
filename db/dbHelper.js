@@ -45,8 +45,90 @@ function getMeasurments() {
     });
 }
 
+function getMeasurmentsBySensor(sensorName) {
+    return new Promise((resolve, reject) => {
+        db.getDb().all(`SELECT * FROM measurements WHERE sensorName = ?`, sensorName, function(err, rows) {
+            if (err) {
+                reject(err);
+            }
+
+            resolve(rows);
+        });
+    });
+}
+
+function getMeasurmentsBySensorRange(sensorName, startTime, endTime, steps) {
+    return new Promise((resolve, reject) => {
+        db.getDb().all(
+            `SELECT * FROM
+            (
+                SELECT *, ROW_NUMBER() OVER (ORDER BY id) as rownum
+                FROM measurements
+                WHERE sensorName = $sensorName and sendTime >= $startTime and sendTime <= $endTime 
+            )
+            WHERE rownum % $steps = 0
+            `,
+            {
+                $sensorName: sensorName,
+                $startTime: startTime,
+                $endTime: endTime,
+                $steps: steps
+            },
+
+            function(err, rows) {
+                if (err) {
+                    reject(err);
+                }
+
+                resolve(rows);
+            }
+        );
+    });
+}
+
+function getMeasurmentsBySensorStartEnd(sensorName, startTime, endTime) {
+    return new Promise((resolve, reject) => {
+        db.getDb().all(`SELECT * FROM measurements WHERE sensorName = ? and sendTime >= ? and sendTime <= ?`, 
+            sensorName,
+            startTime,
+            endTime,
+
+            function(err, rows) {
+                if (err) {
+                    reject(err);
+                }
+
+                resolve(rows);
+            }
+        );
+    });
+}
+
+function getMeasurmentsBySensorStart(sensorName, startTime) {
+   return getMeasurmentsBySensor(sensorName, startTime, Date.now());
+}
+
+
+
+function getMeasurmentsByDevice(device) {
+    return new Promise((resolve, reject) => {
+        db.getDb().all(`SELECT * FROM measurements WHERE device = '?'`, device, function(err, rows) {
+            if (err) {
+                reject(err);
+            }
+
+            resolve(rows);
+        });
+    });
+}
+
 module.exports = {
     insertMeasurment,
     getSensors,
-    getMeasurments
+    getMeasurments,
+    getMeasurmentsByDevice,
+    getMeasurmentsBySensor,
+    getMeasurmentsBySensorRange,
+    getMeasurmentsBySensorStart,
+    getMeasurmentsBySensorStartEnd
 };
