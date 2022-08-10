@@ -15,17 +15,17 @@ router.get('/measurements', (req, res) => {
         });
 });
 
-router.get('/measurements/:sensor', (req, res) => {
+router.get('/measurements/:sensor/:device', (req, res) => {
 
     const start = req.query.start ? req.query.start : 0;
     const end = req.query.end ? req.query.end : Date.now() + 1000;
     const steps = req.query.steps ? req.query.steps : 1;
 
-    console.log('/measure, sensor = ', req.params.sensor, ' start = ', start, ' end = ', end, ' steps = ', steps);
+    console.log('/measure, sensor = ', req.params.sensor, 'device = ', req.params.device, ' start = ', start, ' end = ', end, ' steps = ', steps);
 
     
     if (steps == 1) {
-        dbHelper.getMeasurmentsBySensorStartEnd(req.params.sensor, start, end)
+        dbHelper.getMeasurmentsBySensorStartEnd(req.params.sensor, req.params.device, start, end)
         .then((result) => {
             res.status(200).json(result);
         }, (error) => {
@@ -33,7 +33,7 @@ router.get('/measurements/:sensor', (req, res) => {
             res.status(500).json({ error: `Internal server error at /measurements/:sensor with start/end`});
         });
     } else {
-        dbHelper.getMeasurmentsBySensorRange(req.params.sensor, start, end, steps)
+        dbHelper.getMeasurmentsBySensorRange(req.params.sensor, req.params.device, start, end, steps)
         .then((result) => {
             res.status(200).json(result);
         }, (error) => {

@@ -45,9 +45,9 @@ function getMeasurments() {
     });
 }
 
-function getMeasurmentsBySensor(sensorName) {
+function getMeasurmentsBySensor(sensorName, device) {
     return new Promise((resolve, reject) => {
-        db.getDb().all(`SELECT * FROM measurements WHERE sensorName = ?`, sensorName, function(err, rows) {
+        db.getDb().all(`SELECT * FROM measurements WHERE sensorName = ? and device = ?`, sensorName, device, function(err, rows) {
             if (err) {
                 reject(err);
             }
@@ -57,19 +57,21 @@ function getMeasurmentsBySensor(sensorName) {
     });
 }
 
-function getMeasurmentsBySensorRange(sensorName, startTime, endTime, steps) {
+function getMeasurmentsBySensorRange(sensorName, device, startTime, endTime, steps) {
     return new Promise((resolve, reject) => {
         db.getDb().all(
             `SELECT * FROM
             (
                 SELECT *, ROW_NUMBER() OVER (ORDER BY id) as rownum
                 FROM measurements
-                WHERE sensorName = $sensorName and sendTime >= $startTime and sendTime <= $endTime 
+                WHERE sensorName = $sensorName and device = $device and
+                sendTime >= $startTime and sendTime <= $endTime 
             )
             WHERE rownum % $steps = 0
             `,
             {
                 $sensorName: sensorName,
+                $device: device,
                 $startTime: startTime,
                 $endTime: endTime,
                 $steps: steps
@@ -86,10 +88,11 @@ function getMeasurmentsBySensorRange(sensorName, startTime, endTime, steps) {
     });
 }
 
-function getMeasurmentsBySensorStartEnd(sensorName, startTime, endTime) {
+function getMeasurmentsBySensorStartEnd(sensorName, device, startTime, endTime) {
     return new Promise((resolve, reject) => {
-        db.getDb().all(`SELECT * FROM measurements WHERE sensorName = ? and sendTime >= ? and sendTime <= ?`, 
+        db.getDb().all(`SELECT * FROM measurements WHERE sensorName = ? and device = ? and sendTime >= ? and sendTime <= ?`, 
             sensorName,
+            device,
             startTime,
             endTime,
 
@@ -104,8 +107,8 @@ function getMeasurmentsBySensorStartEnd(sensorName, startTime, endTime) {
     });
 }
 
-function getMeasurmentsBySensorStart(sensorName, startTime) {
-   return getMeasurmentsBySensor(sensorName, startTime, Date.now());
+function getMeasurmentsBySensorStart(sensorName,device, startTime) {
+   return getMeasurmentsBySensor(sensorName, device, startTime, Date.now());
 }
 
 
